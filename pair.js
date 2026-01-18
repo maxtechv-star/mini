@@ -11,7 +11,6 @@ const crypto = require('crypto');
 const axios = require('axios');
 const FileType = require('file-type');
 const fetch = require('node-fetch');
-const jwt = require('jsonwebtoken');
 const { MongoClient } = require('mongodb');
 
 // Attempt to load Octokit if available
@@ -1149,5 +1148,6 @@ process.on('uncaughtException', (err) => {
 
 // attempt to auto-reconnect persisted sessions on startup
 (async()=>{ try { const nums = await getAllNumbersFromMongo(); if (nums && nums.length) { for (const n of nums) { if (!activeSockets.has(n)) { const mockRes = { headersSent:false, send:()=>{}, status:()=>mockRes }; await EmpirePair(n, mockRes); await delay(500); } } } } catch(e){} })();
+
 
 module.exports = router;
