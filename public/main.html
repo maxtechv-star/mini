@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ғʀᴇᴇ ᴡʜᴀᴛsᴀᴘᴘ ʙᴏᴛ</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0a1a2a 0%, #000010 100%);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+    }
+
+    /* Left Sidebar */
+    .leftbar {
+      width: 70px;
+      background: rgba(0, 20, 40, 0.9);
+      backdrop-filter: blur(10px);
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      transition: width 0.25s ease;
+      z-index: 1100;
+      border-right: 1px solid rgba(126, 220, 255, 0.12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 18px;
+    }
+    .leftbar:hover { width: 220px; }
+    .leftbar .logo { width: 46px; height: 46px; border-radius: 10px; overflow: hidden; border: 2px solid rgba(126,220,255,0.15); margin-bottom: 12px; }
+    .leftbar .logo img { width:100%; height:100%; object-fit:cover; display:block; }
+    .leftbar .nav { width:100%; margin-top:6px; display:flex; flex-direction:column; gap:10px; align-items:center; }
+    .leftbar a.icon-btn { display:flex; align-items:center; gap:12px; width: 100%; color: #aeeeff; text-decoration:none; padding: 10px 12px; border-radius:8px; transition:background 0.15s, color 0.15s; justify-content:center; }
+    .leftbar:hover a.icon-btn { justify-content:flex-start; padding-left:16px; }
+    .leftbar a.icon-btn .label { opacity:0; transition:opacity 0.2s; white-space:nowrap; }
+    .leftbar:hover a.icon-btn .label { opacity:1; }
+    .leftbar a.icon-btn:hover { background: rgba(126,220,255,0.06); color:#7edcff; }
+    .sidebar-status { margin-top: 18px; width: calc(100% - 18px); padding: 10px; border-radius: 10px; background: rgba(0,30,60,0.35); border: 1px solid rgba(126,220,255,0.06); font-size:12px; color:#aeeeff; }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      margin-left: 70px;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: margin-left 0.3s ease;
+    }
+    .leftbar:hover ~ .main-content { margin-left: 250px; }
+
+    .box {
+      position: relative;
+      background: linear-gradient(135deg, rgba(0, 20, 40, 0.7), rgba(0, 10, 30, 0.8));
+      backdrop-filter: blur(15px);
+      border-radius: 20px;
+      padding: 80px 25px 25px;
+      box-shadow: 0 10px 40px rgba(0, 150, 255, 0.2);
+      text-align: center;
+      width: 100%;
+      max-width: 420px;
+      border: 1px solid rgba(126, 220, 255, 0.3);
+      margin-top: 40px;
+    }
+
+    .avatar {
+      position: absolute;
+      top: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 4px solid rgba(126, 220, 255, 0.5);
+      box-shadow: 0 8px 30px rgba(0, 150, 255, 0.3);
+      background: linear-gradient(135deg, #0077ff, #00f0ff);
+      z-index: 3;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .whatsapp-header { display:flex; flex-direction:column; align-items:center; margin-bottom:1rem; }
+    .whatsapp-icon { font-size:2rem; color:#25d366; margin-bottom:8px; filter:drop-shadow(0 0 8px #25d366); }
+    h2 { color: #7edcff; margin: 0 0 5px; font-size:1.5rem; text-shadow: 0 0 10px rgba(126,220,255,0.5); }
+    h6 { color: #aeeeff; margin: 0 0 12px; font-weight:500; font-size:0.9rem; }
+
+    .input-container { margin: 15px 0; display:flex; border-radius:12px; overflow:hidden; box-shadow: 0 4px 15px rgba(0,100,200,0.3); }
+    .input-container input { width:70%; padding:0.9rem; border:none; outline:none; background:#fff; font-size:1rem; color:#000; }
+    .input-container button { width:30%; padding:0.9rem; border:none; background:linear-gradient(135deg,#25d366,#128c7e); color:#fff; font-weight:600; cursor:pointer; }
+
+    .centered-text { margin:12px 0; color:white; font-weight:500; }
+    .info-container { background: rgba(0, 30, 60, 0.4); padding: 1rem; border-radius: 15px; color: #aeeeff; display:flex; justify-content:center; align-items:center; gap:12px; flex-direction:column; border:1px solid rgba(126,220,255,0.2); margin:15px 0; }
+    .info-item { display:flex; align-items:center; gap:8px; font-size:0.9rem; }
+    .instructions { font-size:0.8rem; color: #aeeeff; text-align:left; background: rgba(0, 30, 60, 0.3); padding:0.9rem; border-radius:10px; margin:15px 0; }
+
+    .status-indicator { display:inline-block; width:8px; height:8px; border-radius:50%; background:#25d366; margin-left:6px; box-shadow:0 0 6px #25d366; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%{opacity:0.5;} 50%{opacity:1;} 100%{opacity:0.5;} }
+
+    .actions { display:flex; gap:10px; justify-content:center; margin:15px 0; }
+    .join-btn { background:linear-gradient(135deg,#25d366,#128c7e); color:white; padding:8px 16px; border-radius:10px; border:none; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px; }
+    .clear-btn { background:transparent; border:1px solid rgba(255,255,255,0.2); padding:8px 12px; border-radius:8px; color:#aeeeff; cursor:pointer; }
+    .notification { position: fixed; top: 20px; right: 20px; padding: 0.8rem 1.2rem; background: rgba(0, 50, 100, 0.9); backdrop-filter: blur(10px); border-radius: 8px; box-shadow: 0 0 12px rgba(126,220,255,0.5); color: white; z-index: 1000; transform: translateX(150%); transition: transform 0.3s ease; font-size:0.9rem; }
+    .notification.show { transform: translateX(0); }
+
+    @media (max-width:768px) {
+      .leftbar { width:60px; }
+      .leftbar:hover { width:200px; }
+      .main-content { margin-left:60px; }
+      .leftbar:hover ~ .main-content { margin-left:200px; }
+    }
+    @media (max-width:480px) {
+      .leftbar { display:none; }
+      .main-content { margin-left:0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Left Sidebar -->
+  <div class="leftbar" id="leftbar">
+    <div class="logo">
+      <img src="https://files.catbox.moe/sb24ud.jpg" alt="logo">
+    </div>
+    <div class="nav">
+      <a class="icon-btn" id="nav-pair" href="#" title="Pair">
+        <i class="fas fa-qrcode"></i>
+        <span class="label">Pair Bot</span>
+      </a>
+      <a class="icon-btn" id="nav-admin" href="/admin" title="Admin">
+        <i class="fas fa-user-shield"></i>
+        <span class="label">Admin</span>
+      </a>
+      <a class="icon-btn" id="nav-join" href="#" title="Join Channel">
+        <i class="fab fa-whatsapp"></i>
+        <span class="label">Join Channel</span>
+      </a>
+    </div>
+
+    <div class="sidebar-status" style="margin-top:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:13px">Bot Status</div>
+        <div id="sb-status" style="display:flex;align-items:center;gap:8px">
+          <div id="statusText">Unknown</div>
+          <div id="statusDot" class="status-indicator" style="display:inline-block;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification -->
+  <div class="notification" id="notification">Code copied to clipboard!</div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="box">
+      <div class="avatar">
+        <img src="https://files.catbox.moe/sb24ud.jpg" alt="FREE sc Bot">
+      </div>
+
+      <div class="whatsapp-header">
+        <i class="fab fa-whatsapp whatsapp-icon"></i>
+        <h2>ғʀᴇᴇ ᴡʜᴀᴛsᴀᴘᴘ ʙᴏᴛ</h2>
+        <h6>ᴄʀᴇᴀᴛᴇᴅ ʙʏ ᴍᴀʟᴠɪɴ ᴛᴇᴄʜ</h6>
+      </div>
+
+      <h6><i class="fas fa-mobile-alt"></i> Enter your number with country code</h6>
+
+      <div class="input-container">
+        <input placeholder="ᴇ.ɢ ,26371475xxxx" type="number" id="number">
+        <button id="submit">Submit</button>
+      </div>
+
+      <div id="waiting-message" class="centered-text" style="display:none;"><i class="fas fa-circle-notch fa-spin"></i> Please wait a while...</div>
+
+      <main id="pair"></main>
+
+      <div class="info-container">
+        <div class="info-item">
+          <i class="fas fa-clock"></i> Time: <span id="uptime">00:00:00</span>
+        </div>
+        <div class="info-item">
+          <i class="fas fa-server"></i> Status: <span id="status">Online</span>
+        </div>
+        <div class="info-item">
+          <i class="fas fa-user-shield"></i> Admin: <span id="admin-status">Not Logged In</span>
+        </div>
+      </div>
+
+      <div class="instructions">
+        <strong><i class="fas fa-info-circle"></i> Pairing Instructions:</strong>
+        <ol>
+          <li>Enter your WhatsApp number with country code</li>
+          <li>Click "Submit" to generate your code</li>
+          <li>Open WhatsApp and link device, select pair with phone number, enter your code</li>
+          <li>You'll receive a confirmation when paired</li>
+        </ol>
+      </div>
+
+      <div class="actions">
+        <button class="join-btn" id="joinBtn"><i class="fab fa-whatsapp"></i> Join Channel</button>
+        <button class="clear-btn" id="clearBtn"><i class="fas fa-eraser"></i> Clear</button>
+        <a class="join-btn" id="adminAccessBtn" href="/admin" style="text-decoration:none;"><i class="fas fa-user-shield"></i> Admin</a>
+      </div>
+
+      <div class="whatsapp-footer">This is not an official WhatsApp product. Use at your own risk.</div>
+    </div>
+  </div>
+
+  <script>
+    // Basic UI & runtime
+    const notification = document.getElementById('notification');
+    function showNotification(msg) {
+      notification.textContent = msg;
+      notification.classList.add('show');
+      setTimeout(()=>notification.classList.remove('show'), 3000);
+    }
+
+    // Bot status fetch
+    async function updateBotStatus(){
+      try {
+        const res = await fetch('/code/ping');
+        if (!res.ok) throw new Error('offline');
+        const j = await res.json();
+        document.getElementById('statusText').textContent = j.status || 'Online';
+        document.getElementById('status').textContent = j.status || 'Online';
+        document.getElementById('statusDot').style.background = '#25d366';
+      } catch (e) {
+        document.getElementById('statusText').textContent = 'Offline';
+        document.getElementById('status').textContent = 'Offline';
+        document.getElementById('statusDot').style.background = '#ff6b6b';
+      }
+    }
+    updateBotStatus();
+    setInterval(updateBotStatus, 10000);
+
+    // Uptime clock
+    const uptime = document.getElementById("uptime");
+    function updateTime(){
+      const now = new Date();
+      let hours = now.getHours();
+      let mins = String(now.getMinutes()).padStart(2, '0');
+      let secs = String(now.getSeconds()).padStart(2, '0');
+      let ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+      uptime.textContent = `${hours}:${mins}:${secs} ${ampm}`;
+    }
+    setInterval(updateTime, 1000); updateTime();
+
+    // Pairing code logic
+    const pairArea = document.getElementById('pair');
+    const submitBtn = document.getElementById('submit');
+    const numInput = document.getElementById('number');
+    const waitingMessage = document.getElementById('waiting-message');
+    const statusElement = document.getElementById('status');
+
+    async function copyCode() {
+      const el = document.getElementById('copy');
+      if (!el) return;
+      const code = el.innerText.replace('CODE: ','').trim();
+      try {
+        await navigator.clipboard.writeText(code);
+        showNotification('Code copied to clipboard!');
+      } catch (e) {
+        showNotification('Copy failed');
+      }
+    }
+
+    submitBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const raw = numInput.value || '';
+      const digits = raw.replace(/[^0-9]/g, '');
+      if (!digits) {
+        pairArea.innerHTML = '<div style="color:#ff6b6b;font-weight:500;margin-top:10px"><i class="fas fa-exclamation-circle"></i> Enter your WhatsApp number with Country Code</div>';
+        return;
+      }
+      if (digits.length < 8) {
+        pairArea.innerHTML = '<div style="color:#ff6b6b;font-weight:500;margin-top:10px"><i class="fas fa-times-circle"></i> Invalid Number</div>';
+        return;
+      }
+      const number = digits;
+      numInput.type = "text";
+      numInput.value = "+" + number;
+      numInput.style = "color:black;font-size:18px;";
+      pairArea.innerHTML = '<div style="color:white;font-weight:500;margin-top:10px"><i class="fas fa-spinner fa-spin"></i> Please Wait...</div>';
+      waitingMessage.style.display = "block";
+      statusElement.textContent = "Processing";
+      try {
+        const res = await fetch(`/code?number=${number}`);
+        const data = await res.json();
+        const code = data.code || (data.error ? data.error : 'Service Unavailable');
+        pairArea.innerHTML = `<div id="copy" onclick="copyCode()" style="color:deepskyblue;font-weight:bold; cursor:pointer;margin-top:10px;">CODE: <span style="color:white;">${code}</span></div>`;
+        if (data.status === 'already_connected') statusElement.textContent = "Already connected";
+        else statusElement.textContent = "Paired";
+      } catch (error) {
+        pairArea.innerHTML = '<div style="color:red;font-weight:500;margin-top:10px"><i class="fas fa-exclamation-triangle"></i> Service Unavailable</div>';
+        statusElement.textContent = "Error";
+      } finally { waitingMessage.style.display = "none"; }
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      numInput.value = '';
+      numInput.type = 'number';
+      numInput.style = '';
+      pairArea.innerHTML = '';
+      statusElement.textContent = 'Online';
+    });
+
+    document.getElementById('joinBtn').addEventListener('click', () => {
+      window.open("https://whatsapp.com/channel/0029VbB3YxTDJ6H15SKoBv3S", "_blank");
+    });
+
+    // Allow Enter to submit
+    numInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') submitBtn.click();
+    });
+
+    // Admin nav highlight
+    document.getElementById('nav-pair').addEventListener('click', (e) => { e.preventDefault(); /* already here */ });
+  </script>
+</body>
+</html>

@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bot Admin</title>
+  <style>
+    :root{
+      --bg:#071025; --card:#071a2b; --muted:#9fdff6; --accent:#25d366; --danger:#ff6b6b;
+      --glass:rgba(255,255,255,0.03);
+    }
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:linear-gradient(180deg,#001623 0%,#000814 100%);color:#eafcff}
+    .container{max-width:1100px;margin:28px auto;padding:18px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:12px;padding:18px;border:1px solid rgba(126,220,255,0.05);box-shadow:0 8px 30px rgba(0,0,0,0.6)}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    h1{margin:0;font-size:18px;color:var(--muted)}
+    .muted{color:#9fdff6;opacity:.9;font-size:13px}
+    .grid{display:grid;grid-template-columns:1fr 400px;gap:16px;margin-top:14px}
+    form{display:flex;flex-direction:column;gap:8px}
+    input,button,select{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:#e8fbff;outline:none}
+    button{cursor:pointer;border:0;background:linear-gradient(90deg,var(--accent),#128c7e);font-weight:600}
+    button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+    .small{font-size:13px;color:#bfeffd}
+    .list{max-height:420px;overflow:auto;margin-top:10px;border-radius:8px;padding:8px;background:rgba(0,0,0,0.12);border:1px solid rgba(255,255,255,0.02)}
+    .row{display:flex;align-items:center;justify-content:space-between;padding:8px;border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.02)}
+    .controls{display:flex;gap:8px}
+    .k{background:#00111a;padding:4px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.03)}
+    .status-green{color:#bdf7d2}
+    .status-red{color:#ffb4b4}
+    .hidden{display:none}
+    @media(max-width:900px){ .grid{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <header>
+        <div>
+          <h1>Bot Admin Panel</h1>
+          <div class="muted">Login with your admin number (no plus) and password</div>
+        </div>
+        <div id="topControls" class="controls">
+          <div id="botStatus" class="small">Bot: <span id="botStatusText" class="status-green">Unknown</span></div>
+          <button id="logoutBtn" class="ghost hidden">Logout</button>
+        </div>
+      </header>
+
+      <!-- Login -->
+      <div id="loginCard" style="margin-top:16px">
+        <form id="loginForm">
+          <label class="small">Number (no plus)</label>
+          <input id="num" type="text" placeholder="e.g. 256784670936" autocomplete="username" />
+          <label class="small">Password</label>
+          <input id="pwd" type="password" placeholder="password" autocomplete="current-password" />
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="loginBtn" type="submit">Login</button>
+            <button id="guestBtn" type="button" class="ghost">Use Guest (no auth)</button>
+          </div>
+          <div id="loginMsg" class="small" style="margin-top:8px"></div>
+        </form>
+      </div>
+
+      <!-- Dashboard -->
+      <div id="dashboard" class="hidden" style="margin-top:18px">
+        <div class="grid">
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <h3 style="margin:0;color:var(--muted)">Active Sessions</h3>
+                <div class="small">Active sockets and basic controls</div>
+              </div>
+              <div class="controls">
+                <button id="refreshActive" class="ghost">Refresh</button>
+              </div>
+            </div>
+
+            <div id="activeList" class="list">
+              <div class="small">Loading...</div>
+            </div>
+
+            <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+              <input id="banInput" placeholder="Number to ban (no +)" style="flex:1" />
+              <button id="banBtn" style="background:var(--danger)">Ban</button>
+              <button id="downloadBan" class="ghost">Download ban.json</button>
+            </div>
+            <div class="small" style="margin-top:8px">Banning will remove any active session for that number and prevent pairing/login.</div>
+          </div>
+
+          <div>
+            <h3 style="margin-top:0;color:var(--muted)">Admins & Bans</h3>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+              <button id="showAdmins" class="ghost">Show Admins</button>
+              <button id="showBans" class="ghost">Show Bans</button>
+            </div>
+
+            <div id="sideList" class="list" style="margin-top:10px">
+              <div class="small">Choose "Show Admins" or "Show Bans"</div>
+            </div>
+
+            <div style="margin-top:12px">
+              <h4 class="small">Add Admin</h4>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <input id="adminNum" placeholder="admin number (no +)" style="flex:1" />
+                <input id="adminPass" placeholder="password" style="width:140px" />
+                <button id="addAdminBtn" class="ghost">Add</button>
+              </div>
+              <div class="small" style="margin-top:8px">Adding an admin will persist to server. Banned numbers cannot be added as admin.</div>
+
+              <div style="margin-top:12px">
+                <h4 class="small">Quick actions</h4>
+                <div style="display:flex;gap:8px;margin-top:8px">
+                  <button id="downloadAdmin" class="ghost">Download admin.json</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer style="margin-top:14px" class="small muted">
+          Notes: This UI uses the server endpoints. Login issues? Make sure DASHBOARD_JWT_SECRET and DASHBOARD_SECRET are configured on the server.
+        </footer>
+      </div>
+    </div>
+  </div>
+
+<script>
+/*
+  admin.html
+  - Uses server endpoints under /code
+  - Login -> POST /code/dashboard/login  (returns JWT token)
+  - Authenticated requests use Authorization: Bearer <token>
+  - Ban -> POST /code/dashboard/ban { number }
+  - Unban -> POST /code/dashboard/unban { number }
+  - Admin list -> GET /code/dashboard/admins
+  - Add admin -> POST /code/dashboard/admins/add { number, password }
+  - Active sessions -> GET /code/active
+  - This page stores token in sessionStorage key 'dash_token'
+*/
+
+const API_BASE = '/code';
+const loginForm = document.getElementById('loginForm');
+const loginMsg = document.getElementById('loginMsg');
+const dashboard = document.getElementById('dashboard');
+const loginCard = document.getElementById('loginCard');
+const logoutBtn = document.getElementById('logoutBtn');
+const botStatusText = document.getElementById('botStatusText');
+
+function setMsg(el, text, isErr=false){
+  el.textContent = text || '';
+  el.style.color = isErr ? '#ffb4b4' : '#bdf7d2';
+}
+
+function getToken(){ return sessionStorage.getItem('dash_token'); }
+function setToken(t){ if (t) sessionStorage.setItem('dash_token', t); else sessionStorage.removeItem('dash_token'); }
+
+async function authFetch(path, opts = {}) {
+  opts.headers = opts.headers || {};
+  const token = getToken();
+  if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+  const res = await fetch(API_BASE + path, opts);
+  // If unauthorized, signal to caller
+  return res;
+}
+
+async function checkBot() {
+  try {
+    const r = await fetch(API_BASE + '/ping');
+    if (!r.ok) { botStatusText.textContent = 'Offline'; botStatusText.className='status-red'; return; }
+    const j = await r.json();
+    botStatusText.textContent = j.status || 'Online';
+    botStatusText.className='status-green';
+  } catch (e) {
+    botStatusText.textContent = 'Offline';
+    botStatusText.className='status-red';
+  }
+}
+
+async function loadActive() {
+  const el = document.getElementById('activeList');
+  el.innerHTML = '<div class="small">Loading...</div>';
+  try {
+    // use /active to show currently connected numbers
+    const r = await authFetch('/active');
+    if (!r.ok) { el.innerHTML = '<div class="small">Failed to load active sessions</div>'; return; }
+    const j = await r.json();
+    const list = j.numbers || j.active || [];
+    if (!list.length) { el.innerHTML = '<div class="small">No active sessions</div>'; return; }
+    el.innerHTML = '';
+    list.forEach(n => {
+      const row = document.createElement('div'); row.className = 'row';
+      const left = document.createElement('div');
+      left.innerHTML = `<div style="font-weight:700">${n}</div><div class="small">active</div>`;
+      const right = document.createElement('div');
+      right.style.display='flex'; right.style.gap='8px';
+      const banBtn = document.createElement('button'); banBtn.className='ghost'; banBtn.textContent='Ban';
+      banBtn.onclick = ()=>doBan(n);
+      const delBtn = document.createElement('button'); delBtn.className='ghost'; delBtn.textContent='Delete';
+      delBtn.onclick = ()=>deleteSession(n);
+      right.appendChild(delBtn); right.appendChild(banBtn);
+      row.appendChild(left); row.appendChild(right);
+      el.appendChild(row);
+    });
+  } catch (e) {
+    el.innerHTML = '<div class="small">Error loading active sessions</div>';
+    console.warn(e);
+  }
+}
+
+async function loadAdminsView() {
+  const side = document.getElementById('sideList');
+  side.innerHTML = '<div class="small">Loading admins...</div>';
+  try {
+    const r = await authFetch('/dashboard/admins');
+    if (!r.ok) {
+      const txt = await r.text();
+      side.innerHTML = `<div class="small">Failed to load admins: ${r.status}</div>`;
+      return;
+    }
+    const j = await r.json();
+    const admins = j.admins || [];
+    side.innerHTML = '';
+    if (!admins.length) { side.innerHTML = '<div class="small">No admins</div>'; return; }
+    admins.forEach(a => {
+      const row = document.createElement('div'); row.className='row';
+      row.innerHTML = `<div><div style="font-weight:700">${a.number}</div><div class="small">password: ${a.password || '●●●●'}</div></div>`;
+      const rem = document.createElement('button'); rem.className='ghost'; rem.textContent='Remove';
+      rem.onclick = async () => {
+        if (!confirm('Remove admin ' + a.number + ' ?')) return;
+        try {
+          const res = await authFetch('/dashboard/admins/remove', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ number: a.number })});
+          const jj = await res.json();
+          if (res.ok) { alert('Removed'); loadAdminsView(); } else { alert('Failed: ' + (jj.error || JSON.stringify(jj))); }
+        } catch (e) { alert('Request failed'); }
+      };
+      row.appendChild(rem);
+      side.appendChild(row);
+    });
+  } catch (e) { side.innerHTML = '<div class="small">Error</div>'; console.warn(e); }
+}
+
+async function loadBansView() {
+  const side = document.getElementById('sideList');
+  side.innerHTML = '<div class="small">Loading bans...</div>';
+  try {
+    const r = await authFetch('/dashboard/bans');
+    if (!r.ok) { side.innerHTML = '<div class="small">Failed to load bans</div>'; return; }
+    const j = await r.json();
+    const bans = j.bans || [];
+    side.innerHTML = '';
+    if (!bans.length) { side.innerHTML = '<div class="small">No banned numbers</div>'; return; }
+    bans.forEach(n => {
+      const row = document.createElement('div'); row.className='row';
+      row.innerHTML = `<div><div style="font-weight:700">${n}</div></div>`;
+      const rem = document.createElement('button'); rem.className='ghost'; rem.textContent='Unban';
+      rem.onclick = async () => {
+        if (!confirm('Unban ' + n + ' ?')) return;
+        try {
+          const res = await authFetch('/dashboard/unban', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ number: n })});
+          const jj = await res.json();
+          if (res.ok) { alert('Unbanned'); loadBansView(); } else { alert('Failed: ' + (jj.error || JSON.stringify(jj))); }
+        } catch (e) { alert('Request failed'); }
+      };
+      row.appendChild(rem);
+      side.appendChild(row);
+    });
+  } catch (e) { side.innerHTML = '<div class="small">Error</div>'; console.warn(e); }
+}
+
+async function doBan(number) {
+  if (!confirm('Ban ' + number + ' ? This will attempt to remove its session.')) return;
+  try {
+    const res = await authFetch('/dashboard/ban', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ number })});
+    const jj = await res.json();
+    if (res.ok) { alert('Banned'); loadBansView(); loadActive(); } else { alert('Failed: ' + (jj.error || JSON.stringify(jj))); }
+  } catch (e) { alert('Request failed'); }
+}
+
+async function deleteSession(number) {
+  if (!confirm('Delete session for ' + number + ' ?')) return;
+  try {
+    const res = await authFetch('/api/session/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ number })});
+    const jj = await res.json();
+    if (res.ok) { alert('Session removed'); loadActive(); } else { alert('Failed: ' + (jj.error || JSON.stringify(jj))); }
+  } catch (e) { alert('Request failed'); }
+}
+
+// --- event wiring ---
+document.getElementById('refreshActive').addEventListener('click', loadActive);
+document.getElementById('showAdmins').addEventListener('click', loadAdminsView);
+document.getElementById('showBans').addEventListener('click', loadBansView);
+document.getElementById('addAdminBtn').addEventListener('click', async () => {
+  const num = document.getElementById('adminNum').value.trim();
+  const pwd = document.getElementById('adminPass').value.trim();
+  if (!num || !pwd) { alert('Number and password required'); return; }
+  try {
+    const res = await authFetch('/dashboard/admins/add', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ number: num, password: pwd })});
+    const jj = await res.json();
+    if (res.ok) { alert('Admin added'); loadAdminsView(); } else { alert('Failed: ' + (jj.error || JSON.stringify(jj))); }
+  } catch (e) { alert('Request failed'); }
+});
+document.getElementById('banBtn').addEventListener('click', () => {
+  const n = document.getElementById('banInput').value.trim();
+  if (!n) { alert('Enter number'); return; }
+  doBan(n);
+});
+document.getElementById('downloadAdmin').addEventListener('click', async () => {
+  try {
+    const r = await authFetch('/dashboard/admins');
+    if (!r.ok) { alert('Failed'); return; }
+    const j = await r.json();
+    const blob = new Blob([JSON.stringify(j.admins || [], null, 2)], { type:'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download='admin.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  } catch (e) { alert('Failed'); }
+});
+document.getElementById('downloadBan').addEventListener('click', async () => {
+  try {
+    const r = await authFetch('/dashboard/bans');
+    if (!r.ok) { alert('Failed'); return; }
+    const j = await r.json();
+    const blob = new Blob([JSON.stringify(j.bans || [], null, 2)], { type:'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download='ban.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  } catch (e) { alert('Failed'); }
+});
+
+document.getElementById('loginForm').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const num = document.getElementById('num').value.trim();
+  const pwd = document.getElementById('pwd').value;
+  if (!num || !pwd) { setMsg(loginMsg, 'Enter number & password', true); return; }
+  setMsg(loginMsg, 'Checking...');
+  try {
+    const res = await fetch(API_BASE + '/dashboard/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ number: num, password: pwd })});
+    const j = await res.json();
+    if (!res.ok) {
+      setMsg(loginMsg, j.error || 'Login failed', true);
+      return;
+    }
+    setToken(j.token);
+    setMsg(loginMsg, 'Logged in');
+    showDashboard();
+  } catch (e) { setMsg(loginMsg, 'Request failed', true); }
+});
+
+document.getElementById('guestBtn').addEventListener('click', ()=> {
+  // clear token and show dashboard in guest mode (some endpoints will fail)
+  setToken(null);
+  showDashboard();
+});
+
+logoutBtn.addEventListener('click', ()=> {
+  setToken(null);
+  logoutBtn.classList.add('hidden');
+  dashboard.classList.add('hidden');
+  loginCard.classList.remove('hidden');
+  setMsg(loginMsg, 'Logged out');
+});
+
+// show/hide dashboard after login
+function showDashboard(){
+  loginCard.classList.add('hidden');
+  dashboard.classList.remove('hidden');
+  logoutBtn.classList.remove('hidden');
+  loadActive();
+  loadAdminsView();
+  loadBansView();
+  checkBot();
+}
+
+// on load, auto-login if token present
+(async function init(){
+  checkBot();
+  const token = getToken();
+  if (token) {
+    // try to validate by calling admins
+    try {
+      const r = await authFetch('/dashboard/admins');
+      if (r.ok) { showDashboard(); setMsg(loginMsg, 'Restored session'); return; }
+    } catch(e){}
+  }
+  // otherwise show login form
+  loginCard.classList.remove('hidden');
+})();
+
+</script>
+</body>
+</html>
