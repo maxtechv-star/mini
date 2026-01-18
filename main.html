@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bot Dashboard — Admin</title>
+  <style>
+    :root{--bg:#071025;--card:#071a2b;--muted:#9fdff6;--accent:#25d366;--danger:#ff6b6b;--glass:rgba(255,255,255,0.04)}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:linear-gradient(180deg,#001623 0%,#000814 100%);color:#eafcff;margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .wrap{width:100%;max-width:980px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(126,220,255,0.06);border-radius:12px;padding:20px;box-shadow:0 6px 24px rgba(0,0,0,0.6)}
+    header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+    header h1{font-size:18px;margin:0;color:var(--muted)}
+    small{color:#9fdff6;font-size:12px}
+    .grid{display:grid;grid-template-columns:1fr 380px;gap:16px}
+    form{display:flex;flex-direction:column;gap:10px}
+    label{font-size:13px;color:#bfeffd}
+    input[type="text"],input[type="password"],input[type="number"]{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:var(--glass);color:#e8fbff;outline:none}
+    button{padding:10px;border-radius:8px;border:0;background:linear-gradient(90deg,var(--accent),#128c7e);color:#fff;font-weight:600;cursor:pointer}
+    button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#9fdff6}
+    .muted{color:#9ad8f5;font-size:13px}
+    .status{padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);font-size:13px}
+    .list{max-height:380px;overflow:auto;padding:10px;border-radius:8px;background:rgba(0,0,0,0.15)}
+    .row{display:flex;align-items:center;justify-content:space-between;padding:8px;border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.02)}
+    .danger{background:linear-gradient(90deg,#3b0d0d,#2b0a0a);color:#fff}
+    .ok{color:#bdf7d2}
+    footer{margin-top:14px;font-size:12px;color:#8fdaf3}
+    .hidden{display:none}
+    .controls{display:flex;gap:8px;align-items:center}
+    .small{font-size:12px;color:#bfeffd}
+    .kbd{background:#00111a;padding:3px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.03);font-weight:600}
+    @media (max-width:900px){.grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <header>
+        <div>
+          <h1>Bot Admin Dashboard</h1>
+          <small>Login with number (no +) and password</small>
+        </div>
+      </header>
+
+      <div id="loginView">
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div style="flex:1;min-width:260px">
+            <form id="loginForm">
+              <label>Number (no plus)</label>
+              <input id="loginNumber" type="text" placeholder="e.g. 256784670936" inputmode="numeric" autocomplete="username" required />
+              <label>Password</label>
+              <input id="loginPassword" type="password" placeholder="password" autocomplete="current-password" required />
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button id="loginBtn" type="submit">Login</button>
+                <button id="forgotBtn" type="button" class="ghost">Forgot?</button>
+              </div>
+              <div id="loginMsg" class="muted" style="margin-top:8px"></div>
+            </form>
+          </div>
+
+          <div style="width:360px">
+            <div class="status">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <div class="muted">Default admin (shipped)</div>
+                  <div style="font-weight:700;margin-top:6px">256784670936 / uthuman</div>
+                </div>
+                <div class="small">Owner cannot be banned</div>
+              </div>
+              <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:10px 0" />
+              <div class="muted">Notes:</div>
+              <ul style="margin:6px 0 0 18px;color:#bfeffd;font-size:13px">
+                <li>Dashboard reads admin.json &amp; ban.json shipped with the static directory.</li>
+                <li>Because this is static, changes are saved locally and offered for download — replace server files to persist server-side.</li>
+                <li>Session deletes use the existing API: <span class="kbd">/code/api/session/delete</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="forgotView" class="hidden">
+        <h3 style="margin-top:12px">Forgot Password</h3>
+        <p class="muted">Enter your number and if it's in admin.json you can set a new password (then download the updated admin.json to persist changes).</p>
+        <form id="forgotForm">
+          <label>Number (no plus)</label>
+          <input id="forgotNumber" type="text" placeholder="e.g. 256784670936" required />
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="checkBtn" type="button">Check</button>
+            <button id="backFromForgot" type="button" class="ghost">Back</button>
+          </div>
+          <div id="forgotMsg" class="muted" style="margin-top:10px"></div>
+        </form>
+      </div>
+
+      <div id="resetView" class="hidden">
+        <h3>Reset Password</h3>
+        <p class="muted">Enter new password for <span id="resetNumberLabel"></span></p>
+        <form id="resetForm">
+          <label>New password</label>
+          <input id="resetPassword" type="password" required />
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="applyReset" type="button">Apply & Download admin.json</button>
+            <button id="cancelReset" type="button" class="ghost">Cancel</button>
+          </div>
+          <div id="resetMsg" class="muted" style="margin-top:10px"></div>
+        </form>
+      </div>
+
+      <div id="dashboardView" class="hidden" style="margin-top:12px">
+        <div class="grid">
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <h3 style="margin:0;color:var(--muted)">Sessions</h3>
+                <small class="muted">Active sessions and controls</small>
+              </div>
+              <div class="controls">
+                <button id="refreshSessions" class="ghost">Refresh</button>
+                <button id="logoutBtn" class="ghost">Logout</button>
+              </div>
+            </div>
+
+            <div style="margin-top:10px" class="list" id="sessionsList">
+              <div class="muted">Loading sessions...</div>
+            </div>
+
+            <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+              <input id="banNumberInput" placeholder="Number to ban (no +)" style="padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#dff"/>
+              <button id="banBtn" style="background:#ff6b6b">Ban & Delete Session</button>
+              <button id="downloadBan" class="ghost">Download ban.json</button>
+            </div>
+
+            <div style="margin-top:8px" class="muted">When banning: session delete is attempted via existing API; ban.json is updated locally and can be downloaded to persist server-side.</div>
+          </div>
+
+          <div>
+            <h3 style="margin-top:0;color:var(--muted)">Banned / Admins</h3>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+              <button id="showBan" class="ghost">Show Ban List</button>
+              <button id="showAdmins" class="ghost">Show Admins</button>
+              <button id="downloadAdmin" class="ghost">Download admin.json</button>
+            </div>
+
+            <div id="sideList" class="list">
+              <div class="muted">Choose "Show Admins" or "Show Ban List"</div>
+            </div>
+
+            <div style="margin-top:12px">
+              <h4 class="muted">Quick actions</h4>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <input id="adminAddNumber" placeholder="admin number (no +)" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#dff"/>
+                <input id="adminAddPass" placeholder="password" style="width:140px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#dff"/>
+                <button id="adminAddBtn" class="ghost">Add Admin</button>
+              </div>
+              <div style="margin-top:8px" class="muted">Add admin updates the in-memory admin list; download admin.json to persist.</div>
+            </div>
+          </div>
+        </div>
+
+        <footer>
+          <div>Important: to enforce bans and admin changes on the server you must persist ban.json / admin.json where your server reads them or implement server endpoints to accept updates. This dashboard helps manage and prepare the files.</div>
+        </footer>
+      </div>
+    </div>
+  </div>
+
+<script>
+/*
+  dashboard_static/index.html
+  - Reads /code/dashboard/static/admin.json and ban.json (static) to authenticate and show lists.
+  - Uses existing API endpoints:
+      - GET /code/api/sessions  => list known sessions (from server)
+      - POST /code/api/session/delete { number } => delete a session
+  - Because static files cannot be written by the browser, this UI offers downloads of updated admin.json / ban.json
+  - Default owner number (server-side) can't be banned here (hard-coded to prevent accidental ban).
+*/
+
+const STATIC_BASE = '/code/dashboard/static';
+const API_BASE = '/code';
+const DEFAULT_OWNER = '263714757857'; // from your config.js (owner number) — cannot ban
+
+let adminList = []; // { number, password }
+let banList = [];   // [ number ]
+let loggedIn = null;
+
+async function loadStaticJson(path) {
+  try {
+    const res = await fetch(path + '?_=' + Date.now());
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) { console.warn('load json failed', e); return null; }
+}
+
+async function init() {
+  adminList = await loadStaticJson(STATIC_BASE + '/admin.json') || [];
+  banList = await loadStaticJson(STATIC_BASE + '/ban.json') || [];
+}
+init();
+
+// --- Utility ---
+function el(id){ return document.getElementById(id) }
+function show(id){ el(id).classList.remove('hidden') }
+function hide(id){ el(id).classList.add('hidden') }
+function toast(msg, warn=false){ const d=el('loginMsg'); d.textContent=msg; d.style.color= warn? '#ffb4b4':'#bdf7d2' }
+
+// --- Login ---
+el('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const number = el('loginNumber').value.trim();
+  const pwd = el('loginPassword').value;
+  if (!number || !pwd) { toast('Enter number and password', true); return; }
+
+  // check ban
+  if (banList.includes(number)) {
+    toast('This number is restricted (banned). Access denied.', true);
+    return;
+  }
+
+  const admin = adminList.find(a => a.number === number);
+  if (admin && admin.password === pwd) {
+    loggedIn = { number };
+    onLoginSuccess();
+    return;
+  }
+
+  // fallback: allow the shipped default credentials (if present)
+  toast('Invalid credentials', true);
+});
+
+function onLoginSuccess() {
+  hide('loginView');
+  hide('forgotView');
+  hide('resetView');
+  show('dashboardView');
+  el('loginMsg').textContent = 'Logged in';
+  loadSessions();
+}
+
+// --- Forgot password flow ---
+el('forgotBtn').addEventListener('click', () => {
+  hide('loginView'); show('forgotView');
+  el('forgotMsg').textContent = '';
+});
+el('backFromForgot').addEventListener('click', () => {
+  show('loginView'); hide('forgotView');
+});
+el('checkBtn').addEventListener('click', async () => {
+  const n = el('forgotNumber').value.trim();
+  if (!n) { el('forgotMsg').textContent = 'Enter number'; return; }
+  const found = adminList.find(a => a.number === n);
+  if (found) {
+    el('resetNumberLabel').textContent = n;
+    hide('forgotView'); show('resetView');
+    el('resetMsg').textContent = '';
+  } else {
+    el('forgotMsg').textContent = 'Number not found in admin.json';
+  }
+});
+el('cancelReset').addEventListener('click', () => { hide('resetView'); show('loginView'); });
+el('applyReset').addEventListener('click', () => {
+  const n = el('resetNumberLabel').textContent;
+  const pw = el('resetPassword').value.trim();
+  if (!pw) { el('resetMsg').textContent = 'Password required'; return; }
+  const idx = adminList.findIndex(a => a.number === n);
+  if (idx >= 0) adminList[idx].password = pw;
+  else adminList.push({ number: n, password: pw });
+  el('resetMsg').textContent = 'Password updated locally. Click "Download admin.json" to persist.';
+});
+
+// --- Dashboard: sessions ---
+async function loadSessions() {
+  const listEl = el('sessionsList');
+  listEl.innerHTML = '<div class="muted">Loading sessions...</div>';
+  try {
+    const res = await fetch(API_BASE + '/api/sessions');
+    if (!res.ok) throw new Error('Failed to fetch sessions');
+    const data = await res.json();
+    const sessions = data.sessions || [];
+    if (!sessions.length) {
+      listEl.innerHTML = '<div class="muted">No sessions found</div>';
+      return;
+    }
+    listEl.innerHTML = '';
+    sessions.forEach(s => {
+      const row = document.createElement('div'); row.className='row';
+      const info = document.createElement('div');
+      info.innerHTML = `<div style="font-weight:700">${s.number}</div><div class="small">${s.updatedAt || ''}</div>`;
+      const btns = document.createElement('div'); btns.style.display='flex'; btns.style.gap='8px';
+      const del = document.createElement('button'); del.className='ghost'; del.textContent='Delete';
+      del.onclick = () => deleteSession(s.number);
+      const ban = document.createElement('button'); ban.style.background='#ff6b6b'; ban.textContent='Ban';
+      ban.onclick = () => banNumber(s.number, true);
+      btns.appendChild(del); btns.appendChild(ban);
+      row.appendChild(info); row.appendChild(btns);
+      listEl.appendChild(row);
+    });
+  } catch (e) {
+    listEl.innerHTML = '<div class="muted">Failed to load sessions</div>';
+    console.warn(e);
+  }
+}
+el('refreshSessions').addEventListener('click', loadSessions);
+
+async function deleteSession(number) {
+  if (!confirm('Delete session for ' + number + ' ?')) return;
+  try {
+    const res = await fetch(API_BASE + '/api/session/delete', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ number })
+    });
+    const j = await res.json();
+    if (j.ok) {
+      alert('Session removed');
+      loadSessions();
+    } else {
+      alert('Failed to remove session: ' + (j.error || JSON.stringify(j)));
+    }
+  } catch (e) { alert('Failed to call API'); console.warn(e); }
+}
+
+// --- Ban workflow ---
+el('banBtn').addEventListener('click', () => {
+  const n = el('banNumberInput').value.trim();
+  if (!n) { alert('Enter a number'); return; }
+  banNumber(n, true);
+});
+
+async function banNumber(number, deleteSessionToo=false) {
+  if (number === DEFAULT_OWNER) { alert("Can't ban owner number"); return; }
+  // add to ban list
+  if (!banList.includes(number)) banList.push(number);
+  // attempt to delete session
+  if (deleteSessionToo) {
+    try {
+      await fetch(API_BASE + '/api/session/delete', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ number })
+      });
+    } catch (e) { console.warn('delete session error', e); }
+  }
+  alert('Number added to local ban list. Click "Download ban.json" to persist to server files.');
+  renderSide('ban');
+  loadSessions();
+}
+
+el('downloadBan').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(banList, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download='ban.json'; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 5000);
+});
+
+// --- Admin list UI & controls ---
+el('showAdmins').addEventListener('click', () => renderSide('admins'));
+el('showBan').addEventListener('click', () => renderSide('ban'));
+el('downloadAdmin').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(adminList, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download='admin.json'; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 5000);
+});
+
+function renderSide(type='admins') {
+  const side = el('sideList'); side.innerHTML='';
+  if (type==='admins') {
+    if (!adminList.length) side.innerHTML='<div class="muted">No admins</div>';
+    adminList.forEach(a=>{
+      const r = document.createElement('div'); r.className='row';
+      r.innerHTML = `<div><div style="font-weight:700">${a.number}</div><div class="small">password: ${a.password ? '●●●●' : '<empty>'}</div></div>`;
+      const rem = document.createElement('button'); rem.className='ghost'; rem.textContent='Remove';
+      rem.onclick = ()=>{ if (confirm('Remove admin '+a.number+' ?')) { adminList = adminList.filter(x=>x.number!==a.number); renderSide('admins'); } };
+      r.appendChild(rem);
+      side.appendChild(r);
+    });
+  } else {
+    if (!banList.length) side.innerHTML='<div class="muted">No banned numbers</div>';
+    banList.forEach(n=>{
+      const r = document.createElement('div'); r.className='row';
+      r.innerHTML = `<div><div style="font-weight:700">${n}</div></div>`;
+      const rem = document.createElement('button'); rem.className='ghost'; rem.textContent='Unban';
+      rem.onclick = ()=>{ if (confirm('Unban '+n+' ?')) { banList = banList.filter(x=>x!==n); renderSide('ban'); } };
+      r.appendChild(rem);
+      side.appendChild(r);
+    });
+  }
+}
+
+el('adminAddBtn').addEventListener('click', () => {
+  const num = el('adminAddNumber').value.trim();
+  const pw = el('adminAddPass').value.trim() || 'changeme';
+  if (!num) { alert('Enter number'); return; }
+  if (adminList.find(a=>a.number===num)) { alert('Admin exists'); return; }
+  adminList.push({ number: num, password: pw });
+  renderSide('admins');
+  alert('Admin added locally. Click "Download admin.json" to persist.');
+});
+
+// --- Logout ---
+el('logoutBtn').addEventListener('click', ()=> {
+  if (!confirm('Logout?')) return;
+  loggedIn = null;
+  hide('dashboardView'); show('loginView');
+  el('loginNumber').value=''; el('loginPassword').value='';
+});
+
+// --- Initial render helpers ---
+(function wire() {
+  // load admin & ban json on start (we already called init)
+  // slightly delay render to allow fetch
+  setTimeout(()=>{ }, 600);
+})();
+</script>
+</body>
+</html>
